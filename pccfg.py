@@ -48,7 +48,7 @@ def read_parameters():
     
     filename = datadir+'parameters.yml'
     if os.path.isfile(filename):
-        data = yaml.load(open(filename).read())
+        data = yaml.load(open(filename).read(),  Loader=yaml.Loader)
         if data != None:
             globals().update(data)
     else:

@@ -65,7 +65,7 @@ class Site(object):
         if os.path.isfile(filename):
             yamls += '\n'+open(filename).read()
         if yamls != '':
-            para = yaml.load(yamls)
+            para = yaml.load(yamls, Loader=yaml.Loader)
             self.__dict__.update(para)
             self.depth = grid(self.depth_grid)
             self.corr_deporate_age = grid(self.corr_deporate_grid)

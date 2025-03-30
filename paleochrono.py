@@ -45,9 +45,34 @@ D = {}
 DC = {}
 
 
+import refcycle
+import psutil
+import gc
+import sys
+
+
+import scipy
+import traceback
+mlo_init = scipy.sparse.linalg._interface.MatrixLinearOperator.__init__
+
+def wrapped_init(self, *args, **kwargs):
+    traceback.print_stack(limit=8)
+    mlo_init(self, *args, **kwargs)
+
+
+scipy.sparse.linalg._interface.MatrixLinearOperator.__init__ = wrapped_init
+
 
 def residuals(var):
     """Calculate the residuals as a function of the variables vector."""
+    print(psutil.Process().memory_info().rss / 1e6, "MB")
+    graph = refcycle.garbage()
+    if len(graph) != 0:
+        graph.export_image('garbage.svg')
+        sys.exit()
+    print(f"found {len(graph)} objects")
+    gc.collect()
+
     index = 0
     for i, dlab in enumerate(pccfg.list_sites):
         D[dlab].variables = var[index:index+np.size(D[dlab].variables)]
@@ -154,7 +179,7 @@ def jacobian_numerical(var):
 ##MAIN
 
 ##Initialisation
-RESI_SIZE = np.empty((np.size(pccfg.list_sites), np.size(pccfg.list_sites)), dtype=np.int)
+RESI_SIZE = np.empty((np.size(pccfg.list_sites), np.size(pccfg.list_sites)), dtype=np.int64)
 
 for di, dlabel in enumerate(pccfg.list_sites):
 
