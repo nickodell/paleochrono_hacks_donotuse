@@ -72,11 +72,9 @@ def residuals(var):
         # turning on refcycle here stops gc.collect() from cleaning up the garbage.
         # I don't know why
         graph = refcycle.garbage()
-        if len(graph) != 0 and id_ != 0:
+        if len(graph) != 0 and id_ < 10:
             graph.export_image(f'garbage{id_}.svg')
             id_ += 1
-            if id_ == 10:
-                sys.exit()
         print(f"found {len(graph)} objects")
     print("collected", gc.collect(), "objects")
     print("after collection", psutil.Process().memory_info().rss / 1e6, "MB")
