@@ -61,17 +61,25 @@ def wrapped_init(self, *args, **kwargs):
 
 
 scipy.sparse.linalg._interface.MatrixLinearOperator.__init__ = wrapped_init
-
+id_ = 0
 
 def residuals(var):
     """Calculate the residuals as a function of the variables vector."""
-    print(psutil.Process().memory_info().rss / 1e6, "MB")
-    graph = refcycle.garbage()
-    if len(graph) != 0:
-        graph.export_image('garbage.svg')
-        sys.exit()
-    print(f"found {len(graph)} objects")
-    gc.collect()
+    global id_
+    print("mem", psutil.Process().memory_info().rss / 1e6, "MB")
+    enable_refcycle = True
+    if enable_refcycle:
+        # turning on refcycle here stops gc.collect() from cleaning up the garbage.
+        # I don't know why
+        graph = refcycle.garbage()
+        if len(graph) != 0 and id_ != 0:
+            graph.export_image(f'garbage{id_}.svg')
+            id_ += 1
+            if id_ == 10:
+                sys.exit()
+        print(f"found {len(graph)} objects")
+    print("collected", gc.collect(), "objects")
+    print("after collection", psutil.Process().memory_info().rss / 1e6, "MB")
 
     index = 0
     for i, dlab in enumerate(pccfg.list_sites):
